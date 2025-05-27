@@ -19,7 +19,7 @@ public class FabrickExternalService {
     private final RestTemplate restTemplate;
     private final FabrickConstants fabrickConstants;
 
-    private HttpEntity<String> buildRequestEntity(String authSchema, String timeZone){
+    public HttpEntity<String> buildRequestEntity(String authSchema, String timeZone){
         HttpHeaders headers = new HttpHeaders();
         headers.set("Api-Key", fabrickConstants.getFabrickApiKey());
         headers.set("X-Time-Zone", timeZone);
@@ -42,12 +42,12 @@ public class FabrickExternalService {
                     new ParameterizedTypeReference<>() {});
             log.info("Request done");
 
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                return response.getBody().getPayload();
-            } else {
+            if (response.getBody() == null || response.getBody().getPayload() == null) {
                 log.warn("Failed to retrieve balance. Status: {}, Body: {}", response.getStatusCode(), response.getBody());
-                throw new FabrickException("Returned error from Fabrick API");
+                throw new FabrickException("Returned wrong body from Fabrick API");
             }
+
+            return response.getBody().getPayload();
         } catch (Exception e) {
             throw new FabrickException("Unexpected error calling Fabrick API");
         }
