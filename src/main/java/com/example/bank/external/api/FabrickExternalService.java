@@ -24,9 +24,9 @@ public class FabrickExternalService {
     private final RestTemplate restTemplate;
     private final FabrickConstants fabrickConstants;
 
-    public HttpHeaders buildRequestEntity(String authSchema, String timeZone){
+    public HttpHeaders buildRequestEntity(String apiKey, String authSchema, String timeZone){
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Api-Key", fabrickConstants.getFabrickApiKey());
+        headers.set("Api-Key", apiKey);
         headers.set("X-Time-Zone", timeZone);
         headers.set("Auth-Schema", authSchema);
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -34,10 +34,10 @@ public class FabrickExternalService {
         return headers;
     }
 
-    public FabrickBalanceDto getBalance(String userId, String authSchema, String timeZone){
+    public FabrickBalanceDto getBalance(String userId, String apiKey, String authSchema, String timeZone){
         try {
             String url = fabrickConstants.getFabrickBaseUrl() + "/" + userId + "/balance";
-            HttpHeaders headers = buildRequestEntity(authSchema, timeZone);
+            HttpHeaders headers = buildRequestEntity(apiKey, authSchema, timeZone);
             log.info("Requested url {}", url);
 
             ResponseEntity<GenericResponseDto<FabrickBalanceDto>> response = this.restTemplate.exchange(
@@ -65,10 +65,10 @@ public class FabrickExternalService {
         }
     }
 
-    public void createTransfer(String userId, String authSchema, String timeZone, PaymentRequestBody body){
+    public void createTransfer(String userId, String apiKey, String authSchema, String timeZone, PaymentRequestBody body){
         try {
             String url = fabrickConstants.getFabrickBaseUrl() + "/" + userId + "/payments/money-transfers";
-            HttpHeaders headers = buildRequestEntity(authSchema, timeZone);
+            HttpHeaders headers = buildRequestEntity(apiKey, authSchema, timeZone);
             log.info("Requested url {}", url);
             log.info("Reqeust body {}", body);
 
@@ -97,12 +97,12 @@ public class FabrickExternalService {
         }
     }
 
-    public FabrickTransactionsDto getTransactions(String userId, String authSchema, String timeZone, LocalDate fromAccountingDate, LocalDate toAccountingDate){
+    public FabrickTransactionsDto getTransactions(String userId, String apiKey, String authSchema, String timeZone, LocalDate fromAccountingDate, LocalDate toAccountingDate){
         try {
             String baseUrl = fabrickConstants.getFabrickBaseUrl() + "/" + userId + "/transactions";
             String queryParams = "?fromAccountingDate=" + fromAccountingDate + "&toAccountingDate=" + toAccountingDate;
             String url = baseUrl + queryParams;
-            HttpHeaders headers = buildRequestEntity(authSchema, timeZone);
+            HttpHeaders headers = buildRequestEntity(apiKey, authSchema, timeZone);
             log.info("Requested url {}", url);
 
             ResponseEntity<GenericResponseDto<FabrickTransactionsDto>> response = this.restTemplate.exchange(

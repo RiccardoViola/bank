@@ -33,29 +33,32 @@ public class BankController {
     @GetMapping("/user/{userId}/balance")
     public ResponseEntity<FabrickBalanceDto> getBalance(
             @PathVariable @Pattern(regexp="\\d+", message = ErrorMassageConstants.USER_ID_DIGITS_CHECK) String userId,
+            @RequestHeader("Api-Key") String apiKey,
             @RequestHeader("Auth-Schema") String authSchema,
             @RequestHeader("X-Time-Zone") String timeZone
     ) {
         log.info("GET getBalance with userId: {}", userId);
-        return ResponseEntity.ok(service.getBalance(userId, authSchema, timeZone));
+        return ResponseEntity.ok(service.getBalance(userId, apiKey, authSchema, timeZone));
     }
 
     @PostMapping("/user/{userId}/payment")
     public ResponseEntity<String> sendPayment(
             @PathVariable @Pattern(regexp="\\d+", message = ErrorMassageConstants.USER_ID_DIGITS_CHECK) String userId,
+            @RequestHeader("Api-Key") String apiKey,
             @RequestHeader("Auth-Schema") String authSchema,
             @RequestHeader("X-Time-Zone") String timeZone,
             @Valid @RequestBody PaymentRequestBody body
     ) {
         log.info("POST sendPayment with userId: {}", userId);
         log.info("Received body {}", body);
-        service.createTransfer(userId, authSchema, timeZone, body);
+        service.createTransfer(userId, apiKey, authSchema, timeZone, body);
         return ResponseEntity.ok("Payment sent");
     }
 
     @GetMapping("/user/{userId}/transactions")
     public ResponseEntity<FabrickTransactionsDto> getTransactions(
             @PathVariable @Pattern(regexp="\\d+", message = ErrorMassageConstants.USER_ID_DIGITS_CHECK) String userId,
+            @RequestHeader("Api-Key") String apiKey,
             @RequestHeader("Auth-Schema") String authSchema,
             @RequestHeader("X-Time-Zone") String timeZone,
             @RequestParam("fromAccountingDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @NotNull LocalDate fromAccountingDate,
@@ -69,6 +72,6 @@ public class BankController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "toAccountingDate must be after or equal to fromAccountingDate");
         }
 
-        return ResponseEntity.ok(service.getTransactions(userId, authSchema, timeZone, fromAccountingDate, toAccountingDate));
+        return ResponseEntity.ok(service.getTransactions(userId, apiKey, authSchema, timeZone, fromAccountingDate, toAccountingDate));
     }
 }

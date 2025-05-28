@@ -12,6 +12,8 @@ import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -37,7 +39,7 @@ public class BankControllerTest {
 
     private Method findGetBalanceMethod() {
         try {
-            return BankController.class.getMethod("getBalance", String.class, String.class, String.class);
+            return BankController.class.getMethod("getBalance", String.class, String.class, String.class, String.class);
         } catch (NoSuchMethodException e) {
             throw new RuntimeException("Method not found", e);
         }
@@ -51,7 +53,7 @@ public class BankControllerTest {
                 .validateParameters(
                         controller,
                         findGetBalanceMethod(),
-                        new Object[]{invalidUserId, "S2S", "Europe/Rome"}
+                        new Object[]{invalidUserId, "apiKey", "S2S", "Europe/Rome"}
                 );
 
         assertThat(violations).isEmpty();
@@ -65,7 +67,7 @@ public class BankControllerTest {
                 .validateParameters(
                         controller,
                         findGetBalanceMethod(),
-                        new Object[]{invalidUserId, "S2S", "Europe/Rome"}
+                        new Object[]{invalidUserId, "apiKey", "S2S", "Europe/Rome"}
                 );
 
         assertThat(violations).isNotEmpty();
@@ -113,84 +115,128 @@ public class BankControllerTest {
 
     @Test
     void testSendPaymentValidUserIdShouldSuccessValidation() throws Exception {
-        Method method = BankController.class.getMethod("sendPayment", String.class, String.class, String.class, PaymentRequestBody.class);
+        Method method = BankController.class.getMethod("sendPayment", String.class, String.class, String.class, String.class, PaymentRequestBody.class);
         PaymentRequestBody validBody = getValidPaymentRequestBody();
 
         Set<ConstraintViolation<BankController>> violations = validator.forExecutables()
-                .validateParameters(controller, method, new Object[]{"123456", "S2S", "Europe/Rome", validBody});
+                .validateParameters(controller, method, new Object[]{"123456", "apiKey", "S2S", "Europe/Rome", validBody});
 
         assertThat(violations).isEmpty();
     }
 
     @Test
     void testSendPaymentInvalidCreditorNameShouldFailValidation() throws Exception {
-        Method method = BankController.class.getMethod("sendPayment", String.class, String.class, String.class, PaymentRequestBody.class);
+        Method method = BankController.class.getMethod("sendPayment", String.class, String.class, String.class, String.class, PaymentRequestBody.class);
         PaymentRequestBody body = getValidPaymentRequestBody();
         body.getCreditor().setName(null);
 
         Set<ConstraintViolation<BankController>> violations = validator.forExecutables()
-                .validateParameters(controller, method, new Object[]{"123", "S2S", "Europe/Rome", body});
+                .validateParameters(controller, method, new Object[]{"123", "apiKey", "S2S", "Europe/Rome", body});
 
         assertThat(violations).isNotEmpty();
     }
 
     @Test
     void testSendPaymentLongDescriptionShouldFailValidation() throws Exception {
-        Method method = BankController.class.getMethod("sendPayment", String.class, String.class, String.class, PaymentRequestBody.class);
+        Method method = BankController.class.getMethod("sendPayment", String.class, String.class, String.class, String.class, PaymentRequestBody.class);
         PaymentRequestBody body = getValidPaymentRequestBody();
         body.setDescription("x".repeat(141));
 
         Set<ConstraintViolation<BankController>> violations = validator.forExecutables()
-                .validateParameters(controller, method, new Object[]{"123", "S2S", "Europe/Rome", body});
+                .validateParameters(controller, method, new Object[]{"123", "apiKey", "S2S", "Europe/Rome", body});
 
         assertThat(violations).isNotEmpty();
     }
 
     @Test
     void testSendPaymentInvalidAmountPrecisionShouldFailValidation() throws Exception {
-        Method method = BankController.class.getMethod("sendPayment", String.class, String.class, String.class, PaymentRequestBody.class);
+        Method method = BankController.class.getMethod("sendPayment", String.class, String.class, String.class, String.class, PaymentRequestBody.class);
         PaymentRequestBody body = getValidPaymentRequestBody();
         body.setAmount(new BigDecimal("100.1234"));
 
         Set<ConstraintViolation<BankController>> violations = validator.forExecutables()
-                .validateParameters(controller, method, new Object[]{"123", "S2S", "Europe/Rome", body});
+                .validateParameters(controller, method, new Object[]{"123", "apiKey", "S2S", "Europe/Rome", body});
 
         assertThat(violations).isNotEmpty();
     }
 
     @Test
     void testSendPaymentMissingCurrencyShouldFailValidation() throws Exception {
-        Method method = BankController.class.getMethod("sendPayment", String.class, String.class, String.class, PaymentRequestBody.class);
+        Method method = BankController.class.getMethod("sendPayment", String.class, String.class, String.class, String.class, PaymentRequestBody.class);
         PaymentRequestBody body = getValidPaymentRequestBody();
         body.setCurrency(null);
 
         Set<ConstraintViolation<BankController>> violations = validator.forExecutables()
-                .validateParameters(controller, method, new Object[]{"123", "S2S", "Europe/Rome", body});
+                .validateParameters(controller, method, new Object[]{"123", "apiKey", "S2S", "Europe/Rome", body});
 
         assertThat(violations).isNotEmpty();
     }
 
     @Test
     void testSendPaymentExecutionDateInPastShouldFailValidation() throws Exception {
-        Method method = BankController.class.getMethod("sendPayment", String.class, String.class, String.class, PaymentRequestBody.class);
+        Method method = BankController.class.getMethod("sendPayment", String.class, String.class, String.class, String.class, PaymentRequestBody.class);
         PaymentRequestBody body = getValidPaymentRequestBody();
         body.setExecutionDate(LocalDate.now().minusDays(1));
 
         Set<ConstraintViolation<BankController>> violations = validator.forExecutables()
-                .validateParameters(controller, method, new Object[]{"123", "S2S", "Europe/Rome", body});
+                .validateParameters(controller, method, new Object[]{"123", "apiKey", "S2S", "Europe/Rome", body});
 
         assertThat(violations).isNotEmpty();
     }
 
     @Test
     void testSendPaymentMissingNaturalPersonFiscalCodeShouldFailValidation() throws Exception {
-        Method method = BankController.class.getMethod("sendPayment", String.class, String.class, String.class, PaymentRequestBody.class);
+        Method method = BankController.class.getMethod("sendPayment", String.class, String.class, String.class, String.class, PaymentRequestBody.class);
         PaymentRequestBody body = getValidPaymentRequestBody();
         body.getTaxRelief().getNaturalPersonBeneficiary().setFiscalCode1(null);
 
         Set<ConstraintViolation<BankController>> violations = validator.forExecutables()
-                .validateParameters(controller, method, new Object[]{"123", "S2S", "Europe/Rome", body});
+                .validateParameters(controller, method, new Object[]{"123", "apiKey", "S2S", "Europe/Rome", body});
 
         assertThat(violations).isNotEmpty();
+    }
+
+    @Test
+    void testGetTransactionsValidParametersShouldPassValidation() throws Exception {
+        Method method = BankController.class.getMethod("getTransactions", String.class, String.class, String.class, String.class, LocalDate.class, LocalDate.class);
+
+        Set<ConstraintViolation<BankController>> violations = validator.forExecutables()
+                .validateParameters(controller, method, new Object[]{"123456", "apiKey", "S2S", "Europe/Rome", LocalDate.now().minusDays(7), LocalDate.now()});
+
+        assertThat(violations).isEmpty();
+    }
+
+    @Test
+    void testGetTransactionsFromDateNullShouldFailValidation() throws Exception {
+        Method method = BankController.class.getMethod("getTransactions", String.class, String.class, String.class, String.class, LocalDate.class, LocalDate.class);
+
+        Set<ConstraintViolation<BankController>> violations = validator.forExecutables()
+                .validateParameters(controller, method, new Object[]{"123456", "apiKey", "S2S", "Europe/Rome", null, LocalDate.now()});
+
+        assertThat(violations).isNotEmpty();
+    }
+
+    @Test
+    void testGetTransactionsToDateNullShouldFailValidation() throws Exception {
+        Method method = BankController.class.getMethod("getTransactions", String.class, String.class, String.class, String.class, LocalDate.class, LocalDate.class);
+
+        Set<ConstraintViolation<BankController>> violations = validator.forExecutables()
+                .validateParameters(controller, method, new Object[]{"123456", "apiKey", "S2S", "Europe/Rome", LocalDate.now(), null});
+
+        assertThat(violations).isNotEmpty();
+    }
+
+    @Test
+    void testGetTransactionsToDateBeforeFromDateShouldThrowException() {
+        LocalDate fromDate = LocalDate.now();
+        LocalDate toDate = fromDate.minusDays(1);
+
+        ResponseStatusException exception = org.junit.jupiter.api.Assertions.assertThrows(
+                ResponseStatusException.class,
+                () -> controller.getTransactions("123456", "apiKey", "S2S", "Europe/Rome", fromDate, toDate)
+        );
+
+        assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(exception.getReason()).isEqualTo("toAccountingDate must be after or equal to fromAccountingDate");
     }
 }

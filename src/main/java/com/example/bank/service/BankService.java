@@ -24,12 +24,12 @@ public class BankService {
     @Autowired
     public BankRepository bankRepository;
 
-    public FabrickBalanceDto getBalance(String userId, String authSchema, String timeZone) {
-        return externalService.getBalance(userId, authSchema, timeZone);
+    public FabrickBalanceDto getBalance(String userId, String apiKey, String authSchema, String timeZone) {
+        return externalService.getBalance(userId, apiKey, authSchema, timeZone);
     }
 
-    public void createTransfer(String userId, String authSchema, String timeZone, PaymentRequestBody body) {
-        externalService.createTransfer(userId, authSchema, timeZone, body);
+    public void createTransfer(String userId, String apiKey, String authSchema, String timeZone, PaymentRequestBody body) {
+        externalService.createTransfer(userId, apiKey, authSchema, timeZone, body);
     }
 
     public void insertTransactions(FabrickTransactionsDto response) {
@@ -52,8 +52,8 @@ public class BankService {
         bankRepository.saveAll(entityList);
     }
 
-    public FabrickTransactionsDto getTransactions(String userId, String authSchema, String timeZone, LocalDate fromAccountingDate, LocalDate toAccountingDate) {
-        FabrickTransactionsDto transactions = externalService.getTransactions(userId, authSchema, timeZone, fromAccountingDate, toAccountingDate);
+    public FabrickTransactionsDto getTransactions(String userId, String apiKey, String authSchema, String timeZone, LocalDate fromAccountingDate, LocalDate toAccountingDate) {
+        FabrickTransactionsDto transactions = externalService.getTransactions(userId, apiKey, authSchema, timeZone, fromAccountingDate, toAccountingDate);
 
         log.info("Start to insert records in H2 database");
         this.insertTransactions(transactions);
