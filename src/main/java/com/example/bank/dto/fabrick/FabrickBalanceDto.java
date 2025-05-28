@@ -16,11 +16,11 @@ public class FabrickBalanceDto {
     @JsonProperty("date")
     private LocalDate date;
     @NotNull
-    @Digits(integer = Integer.MAX_VALUE, fraction = 2, message = ErrorMassageConstants.BALANCE_DIGITS_CHECK)
+    @Digits(integer = Integer.MAX_VALUE, fraction = 2, message = ErrorMassageConstants.DIGITS_CHECK)
     @JsonProperty("balance")
     private BigDecimal balance;
     @NotNull
-    @Digits(integer = Integer.MAX_VALUE, fraction = 2, message = ErrorMassageConstants.BALANCE_DIGITS_CHECK)
+    @Digits(integer = Integer.MAX_VALUE, fraction = 2, message = ErrorMassageConstants.DIGITS_CHECK)
     @JsonProperty("availableBalance")
     private BigDecimal availableBalance;
     @NotBlank

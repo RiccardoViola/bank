@@ -38,9 +38,8 @@ public class FabrickExternalServiceTest {
         String timeZone = "Europe/Rome";
         when(fabrickConstants.getFabrickApiKey()).thenReturn("api-key");
 
-        HttpEntity<String> entity = service.buildRequestEntity(authSchema, timeZone);
+        HttpHeaders headers = service.buildRequestEntity(authSchema, timeZone);
 
-        HttpHeaders headers = entity.getHeaders();
         assertThat(headers.getFirst("Api-Key")).isEqualTo("api-key");
         assertThat(headers.getFirst("X-Time-Zone")).isEqualTo("Europe/Rome");
         assertThat(headers.getFirst("Auth-Schema")).isEqualTo("S2S");

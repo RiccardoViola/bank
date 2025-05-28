@@ -1,9 +1,11 @@
 package com.example.bank.controller;
 
 import com.example.bank.dto.fabrick.FabrickBalanceDto;
+import com.example.bank.dto.request.PaymentRequestBody;
 import com.example.bank.model.Transaction;
 import com.example.bank.service.BankService;
 import com.example.bank.util.ErrorMassageConstants;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,12 +35,16 @@ public class BankController {
     }
 
     @PostMapping("/user/{userId}/payment")
-    public void sendPayment(
+    public ResponseEntity<Void> sendPayment(
             @PathVariable @Pattern(regexp="\\d+", message = ErrorMassageConstants.USER_ID_DIGITS_CHECK) String userId,
             @RequestHeader("Auth-Schema") String authSchema,
-            @RequestHeader("X-Time-Zone") String timeZone
+            @RequestHeader("X-Time-Zone") String timeZone,
+            @Valid @RequestBody PaymentRequestBody body
     ) {
-        service.createTransfer(userId);
+        log.info("POST sendPayment with userId: {}", userId);
+        log.info("Received body {}", body);
+        service.createTransfer(userId, authSchema, timeZone, body);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/user/{userId}/transactions")
