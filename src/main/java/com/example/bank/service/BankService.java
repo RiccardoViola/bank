@@ -22,7 +22,7 @@ public class BankService {
     @Autowired
     private FabrickExternalService externalService;
     @Autowired
-    private BankRepository bankRepository;
+    public BankRepository bankRepository;
 
     public FabrickBalanceDto getBalance(String userId, String authSchema, String timeZone) {
         return externalService.getBalance(userId, authSchema, timeZone);
