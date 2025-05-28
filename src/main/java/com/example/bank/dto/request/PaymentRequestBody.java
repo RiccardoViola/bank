@@ -1,6 +1,7 @@
 package com.example.bank.dto.request;
 
 import com.example.bank.dto.request.custom.annotation.ValidExecutionDate;
+import com.example.bank.dto.request.custom.annotation.ValidNotPastDate;
 import com.example.bank.dto.request.custom.annotation.ValidTaxRelief;
 import com.example.bank.dto.request.utils.BeneficiaryType;
 import com.example.bank.dto.request.utils.FeeType;
@@ -21,62 +22,76 @@ import java.time.LocalDate;
 @ValidExecutionDate
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PaymentRequestBody {
+    @Valid
     @NotNull
     @JsonProperty("creditor")
     Creditor creditor;
     @Valid
+    @ValidNotPastDate
     @JsonFormat(pattern = "yyyy-MM-dd")
     @JsonProperty("executionDate")
     private LocalDate executionDate;
     @JsonProperty("uri")
     private String uri;
+    @Valid
     @NotNull
     @Size(max = 140)
     @JsonProperty("description")
     private String description;
+    @Valid
     @NotNull
     @Digits(integer = Integer.MAX_VALUE, fraction = 2, message = ErrorMassageConstants.DIGITS_CHECK)
     @JsonProperty("amount")
     private BigDecimal amount;
+    @Valid
     @NotNull
     @JsonProperty("currency")
     private String currency;
+    @Valid
     @JsonSetter(nulls = Nulls.SKIP)
     @JsonProperty("isUrgent")
     private Boolean isUrgent = false;
+    @Valid
     @JsonSetter(nulls = Nulls.SKIP)
     @JsonProperty("isInstant")
     private Boolean isInstant = false;
+    @Valid
     @JsonProperty("feeType")
     private FeeType feeType;
     @JsonProperty("feeAccountId")
     private String feeAccountId;
+    @Valid
     @JsonProperty("taxRelief")
     private TaxRelief taxRelief;
 
     @Data
     public static class Creditor {
+        @Valid
         @NotNull
         @Size(max = 70)
         @JsonProperty("name")
         private String name;
+        @Valid
         @NotNull
         @JsonProperty("account")
         private Account account;
 
         @Data
         public static class Account {
+            @Valid
             @NotNull
             @JsonProperty("accountCode")
             @Pattern(regexp = "\\w+", message = ErrorMassageConstants.ALPHANUMERIC_CHECK)
             private String accountCode;
             @JsonProperty("bicCode")
             private String bicCode;
+            @Valid
             @JsonProperty("address")
             private Address address;
 
             @Data
             public static class Address {
+                @Valid
                 @Size(max = 40)
                 @JsonProperty("address")
                 private String address;
@@ -91,14 +106,18 @@ public class PaymentRequestBody {
     @Data
     @ValidTaxRelief
     public static class TaxRelief {
+        @Valid
         @JsonProperty("taxReliefId")
         private TaxReliefIdType taxReliefId;
+        @Valid
         @NotNull
         @JsonProperty("isCondoUpgrade")
         private Boolean isCondoUpgrade;
+        @Valid
         @NotNull
         @JsonProperty("creditorFiscalCode")
         private String creditorFiscalCode;
+        @Valid
         @NotNull
         @JsonProperty("beneficiaryType")
         private BeneficiaryType beneficiaryType;
@@ -111,6 +130,7 @@ public class PaymentRequestBody {
 
         @Data
         public static class NaturalPersonBeneficiary {
+            @Valid
             @NotNull
             @JsonProperty("fiscalCode1")
             private String fiscalCode1;
@@ -126,6 +146,7 @@ public class PaymentRequestBody {
 
         @Data
         public static class LegalPersonBeneficiary {
+            @Valid
             @NotNull
             @JsonProperty("fiscalCode")
             private String fiscalCode;

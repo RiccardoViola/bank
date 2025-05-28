@@ -1,7 +1,9 @@
 package com.example.bank;
 
 import com.example.bank.dto.fabrick.FabrickBalanceDto;
+import com.example.bank.dto.fabrick.FabrickPaymentDto;
 import com.example.bank.dto.fabrick.GenericResponseDto;
+import com.example.bank.dto.request.PaymentRequestBody;
 import com.example.bank.exception.FabrickException;
 import com.example.bank.external.api.FabrickExternalService;
 import com.example.bank.util.FabrickConstants;
@@ -10,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.*;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -92,6 +95,61 @@ public class FabrickExternalServiceTest {
         assertThatThrownBy(() -> service.getBalance(userId, authSchema, timeZone))
                 .isInstanceOf(FabrickException.class)
                 .hasMessageContaining("Unexpected error calling Fabrick API");
+    }
+
+    @Test
+    void testCreateTransferShouldSucceed() {
+        String userId = "12345";
+        String authSchema = "S2S";
+        String timeZone = "Europe/Rome";
+        String url = "https://api.test/" + userId + "/payments/money-transfers";
+
+        PaymentRequestBody body = new PaymentRequestBody();
+        FabrickPaymentDto paymentDto = new FabrickPaymentDto();
+        GenericResponseDto<FabrickPaymentDto> genericResponse = new GenericResponseDto<>();
+        genericResponse.setPayload(paymentDto);
+
+        ResponseEntity<GenericResponseDto<FabrickPaymentDto>> response =
+                new ResponseEntity<>(genericResponse, HttpStatus.OK);
+
+        when(fabrickConstants.getFabrickBaseUrl()).thenReturn("https://api.test");
+        when(fabrickConstants.getFabrickApiKey()).thenReturn("api-key");
+
+        when(restTemplate.exchange(
+                eq(url),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                ArgumentMatchers.<ParameterizedTypeReference<GenericResponseDto<FabrickPaymentDto>>>any(),
+                eq(body)
+        )).thenReturn(response);
+
+        assertThatCode(() -> service.createTransfer(userId, authSchema, timeZone, body))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testCreateTransferShouldThrowFabrickExceptionOnRestClientError() {
+        String userId = "12345";
+        String authSchema = "S2S";
+        String timeZone = "Europe/Rome";
+        String url = "https://api.test/" + userId + "/payments/money-transfers";
+
+        PaymentRequestBody body = new PaymentRequestBody();
+
+        when(fabrickConstants.getFabrickBaseUrl()).thenReturn("https://api.test");
+        when(fabrickConstants.getFabrickApiKey()).thenReturn("api-key");
+
+        when(restTemplate.exchange(
+                eq(url),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                ArgumentMatchers.<ParameterizedTypeReference<GenericResponseDto<FabrickPaymentDto>>>any(),
+                eq(body)
+        )).thenThrow(new ResourceAccessException("Connection error"));
+
+        assertThatThrownBy(() -> service.createTransfer(userId, authSchema, timeZone, body))
+                .isInstanceOf(FabrickException.class)
+                .hasMessageContaining("Error during connection to Fabrick API");
     }
 }
 
