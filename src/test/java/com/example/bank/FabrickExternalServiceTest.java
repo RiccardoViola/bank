@@ -67,7 +67,6 @@ public class FabrickExternalServiceTest {
         ResponseEntity<GenericResponseDto<FabrickBalanceDto>> response = new ResponseEntity<>(genericResponse, HttpStatus.OK);
 
         when(fabrickConstants.getFabrickBaseUrl()).thenReturn("https://api.test");
-        when(fabrickConstants.getFabrickApiKey()).thenReturn("api-key");
         when(restTemplate.exchange(
                 eq(url),
                 eq(HttpMethod.GET),
@@ -89,7 +88,6 @@ public class FabrickExternalServiceTest {
         String url = "https://api.test/" + userId + "/balance";
 
         when(fabrickConstants.getFabrickBaseUrl()).thenReturn("https://api.test");
-        when(fabrickConstants.getFabrickApiKey()).thenReturn("api-key");
         when(restTemplate.exchange(
                 eq(url),
                 eq(HttpMethod.GET),
@@ -119,7 +117,6 @@ public class FabrickExternalServiceTest {
                 new ResponseEntity<>(genericResponse, HttpStatus.OK);
 
         when(fabrickConstants.getFabrickBaseUrl()).thenReturn("https://api.test");
-        when(fabrickConstants.getFabrickApiKey()).thenReturn("api-key");
 
         when(restTemplate.exchange(
                 eq(url),
@@ -144,7 +141,6 @@ public class FabrickExternalServiceTest {
         PaymentRequestBody body = new PaymentRequestBody();
 
         when(fabrickConstants.getFabrickBaseUrl()).thenReturn("https://api.test");
-        when(fabrickConstants.getFabrickApiKey()).thenReturn("api-key");
 
         when(restTemplate.exchange(
                 eq(url),
@@ -176,7 +172,6 @@ public class FabrickExternalServiceTest {
         ResponseEntity<GenericResponseDto<FabrickTransactionsDto>> response = new ResponseEntity<>(genericResponse, HttpStatus.OK);
 
         when(fabrickConstants.getFabrickBaseUrl()).thenReturn("https://api.test");
-        when(fabrickConstants.getFabrickApiKey()).thenReturn("api-key");
         when(restTemplate.exchange(
                 eq(url),
                 eq(HttpMethod.GET),
@@ -200,7 +195,6 @@ public class FabrickExternalServiceTest {
         String url = "https://api.test/" + userId + "/transactions?fromAccountingDate=" + fromDate + "&toAccountingDate=" + toDate;
 
         when(fabrickConstants.getFabrickBaseUrl()).thenReturn("https://api.test");
-        when(fabrickConstants.getFabrickApiKey()).thenReturn("api-key");
         when(restTemplate.exchange(
                 eq(url),
                 eq(HttpMethod.GET),
