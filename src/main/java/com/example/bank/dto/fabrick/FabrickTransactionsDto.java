@@ -31,6 +31,7 @@ public class FabrickTransactionsDto {
         @JsonProperty("description")
         private String description;
 
+        @Data
         public static class FabrickTransactionType {
             @JsonProperty("enumeration")
             private String enumeration;

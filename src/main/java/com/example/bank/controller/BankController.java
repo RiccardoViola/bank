@@ -10,6 +10,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,8 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class BankController {
 
-    private final BankService service;
+    @Autowired
+    private BankService service;
 
     @GetMapping("/user/{userId}/balance")
     public ResponseEntity<FabrickBalanceDto> getBalance(
