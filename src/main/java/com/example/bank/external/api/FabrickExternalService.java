@@ -2,6 +2,7 @@ package com.example.bank.external.api;
 
 import com.example.bank.dto.fabrick.FabrickBalanceDto;
 import com.example.bank.dto.fabrick.FabrickPaymentDto;
+import com.example.bank.dto.fabrick.FabrickTransactionsDto;
 import com.example.bank.dto.fabrick.GenericResponseDto;
 import com.example.bank.dto.request.PaymentRequestBody;
 import com.example.bank.exception.FabrickException;
@@ -12,6 +13,8 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.*;
+
+import java.time.LocalDate;
 
 @Slf4j
 @Service
@@ -56,6 +59,9 @@ public class FabrickExternalService {
             throw new FabrickException("Error during connection to Fabrick API");
         } catch (RestClientException e) {
             throw new FabrickException("Unexpected error calling Fabrick API");
+        } catch (Exception e) {
+            log.warn("Exception {}", e.getMessage());
+            throw new FabrickException("Unexpected error");
         }
     }
 
@@ -85,6 +91,43 @@ public class FabrickExternalService {
             throw new FabrickException("Error during connection to Fabrick API");
         } catch (RestClientException e) {
             throw new FabrickException("Unexpected error calling Fabrick API");
+        } catch (Exception e) {
+            log.warn("Exception {}", e.getMessage());
+            throw new FabrickException("Unexpected error");
+        }
+    }
+
+    public FabrickTransactionsDto getTransactions(String userId, String authSchema, String timeZone, LocalDate fromAccountingDate, LocalDate toAccountingDate){
+        try {
+            String baseUrl = fabrickConstants.getFabrickBaseUrl() + "/" + userId + "/transactions";
+            String queryParams = "?fromAccountingDate=" + fromAccountingDate + "&toAccountingDate=" + toAccountingDate;
+            String url = baseUrl + queryParams;
+            HttpHeaders headers = buildRequestEntity(authSchema, timeZone);
+            log.info("Requested url {}", url);
+
+            ResponseEntity<GenericResponseDto<FabrickTransactionsDto>> response = this.restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    new HttpEntity<>(headers),
+                    new ParameterizedTypeReference<>() {});
+            log.info("Request done");
+
+            if (response.getBody() == null || response.getBody().getPayload() == null){
+                log.warn("Failed to retrieve transactions. Body: {}", response.getBody());
+                throw new FabrickException("Returned wrong body from Fabrick API");
+            }
+
+            return response.getBody().getPayload();
+        } catch (HttpStatusCodeException e) {
+            log.warn("response {}", e.getResponseBodyAs(new ParameterizedTypeReference<GenericResponseDto<FabrickTransactionsDto>>() {}));
+            throw new FabrickException("Error " + e.getStatusCode() + " calling Fabrick API");
+        } catch (ResourceAccessException e) {
+            throw new FabrickException("Error during connection to Fabrick API");
+        } catch (RestClientException e) {
+            throw new FabrickException("Unexpected error calling Fabrick API");
+        } catch (Exception e) {
+            log.warn("Exception {}", e.getMessage());
+            throw new FabrickException("Unexpected error");
         }
     }
 }

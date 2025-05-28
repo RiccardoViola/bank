@@ -1,15 +1,14 @@
 package com.example.bank.service;
 
 import com.example.bank.dto.fabrick.FabrickBalanceDto;
+import com.example.bank.dto.fabrick.FabrickTransactionsDto;
 import com.example.bank.dto.request.PaymentRequestBody;
 import com.example.bank.external.api.FabrickExternalService;
-import com.example.bank.model.Transaction;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDate;
 
 @Slf4j
 @Service
@@ -26,7 +25,8 @@ public class BankService {
         externalService.createTransfer(userId, authSchema, timeZone, body);
     }
 
-    public List<Transaction> getTransactions(String userId) {
-        return new ArrayList<>();
+    public FabrickTransactionsDto getTransactions(String userId, String authSchema, String timeZone, LocalDate fromAccountingDate, LocalDate toAccountingDate) {
+        FabrickTransactionsDto transactions = externalService.getTransactions(userId, authSchema, timeZone, fromAccountingDate, toAccountingDate);
+        return transactions;
     }
 }

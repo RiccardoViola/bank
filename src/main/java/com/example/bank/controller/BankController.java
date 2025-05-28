@@ -1,19 +1,23 @@
 package com.example.bank.controller;
 
 import com.example.bank.dto.fabrick.FabrickBalanceDto;
+import com.example.bank.dto.fabrick.FabrickTransactionsDto;
 import com.example.bank.dto.request.PaymentRequestBody;
-import com.example.bank.model.Transaction;
 import com.example.bank.service.BankService;
 import com.example.bank.util.ErrorMassageConstants;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
+import java.time.LocalDate;
 
 @Slf4j
 @Validated
@@ -35,7 +39,7 @@ public class BankController {
     }
 
     @PostMapping("/user/{userId}/payment")
-    public ResponseEntity<Void> sendPayment(
+    public ResponseEntity<String> sendPayment(
             @PathVariable @Pattern(regexp="\\d+", message = ErrorMassageConstants.USER_ID_DIGITS_CHECK) String userId,
             @RequestHeader("Auth-Schema") String authSchema,
             @RequestHeader("X-Time-Zone") String timeZone,
@@ -44,15 +48,25 @@ public class BankController {
         log.info("POST sendPayment with userId: {}", userId);
         log.info("Received body {}", body);
         service.createTransfer(userId, authSchema, timeZone, body);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Payment sent");
     }
 
     @GetMapping("/user/{userId}/transactions")
-    public List<Transaction> getTransactions(
+    public ResponseEntity<FabrickTransactionsDto> getTransactions(
             @PathVariable @Pattern(regexp="\\d+", message = ErrorMassageConstants.USER_ID_DIGITS_CHECK) String userId,
             @RequestHeader("Auth-Schema") String authSchema,
-            @RequestHeader("X-Time-Zone") String timeZone
-    ) {
-        return service.getTransactions(userId);
+            @RequestHeader("X-Time-Zone") String timeZone,
+            @RequestParam("fromAccountingDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @NotNull LocalDate fromAccountingDate,
+            @RequestParam("toAccountingDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @NotNull LocalDate toAccountingDate
+            ) {
+        log.info("GET getTransactions with userId: {}", userId);
+        log.info("Received fromAccountingDate {}", fromAccountingDate);
+        log.info("Received fromAccountingDate {}", toAccountingDate);
+
+        if (toAccountingDate.isBefore(fromAccountingDate)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "toAccountingDate must be after or equal to fromAccountingDate");
+        }
+
+        return ResponseEntity.ok(service.getTransactions(userId, authSchema, timeZone, fromAccountingDate, toAccountingDate));
     }
 }
